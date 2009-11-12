@@ -1,7 +1,7 @@
 from setuptools import setup
 from setuptools import find_packages
 
-version = '0.1svn'
+version = '0.2svn'
 
 setup(
     name='django-transmeta',
