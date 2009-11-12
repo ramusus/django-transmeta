@@ -1,12 +1,12 @@
 from setuptools import setup
 from setuptools import find_packages
 
-version = '0.2svn'
+version = '0.2'
 
 setup(
-    name='django-transmeta',
+    name='django_transmeta',
     version=version,
-    description="Generic tagging application for Django",
+    description="Model translation for Django",
     # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
     classifiers = ['Development Status :: 4 - Beta',
         'Environment :: Web Environment',
