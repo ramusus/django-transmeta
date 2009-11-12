@@ -5,6 +5,8 @@ from django.db.models.fields import NOT_PROVIDED
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import get_language
+from django.utils.translation import activate
+from django.utils.translation import deactivate
 
 LANGUAGE_CODE = 0
 LANGUAGE_NAME = 1
@@ -113,7 +115,9 @@ class TransMeta(models.base.ModelBase):
                     if not lang_attr.blank:
                         lang_attr.blank = True
                 if lang_attr.verbose_name:
+                    activate(lang_code)
                     lang_attr.verbose_name = u'%s %s' % (lang_attr.verbose_name, lang_code)
+                    deactivate()
                 attrs[lang_attr_name] = lang_attr
             del attrs[field]
             attrs[field] = property(default_value(field))
