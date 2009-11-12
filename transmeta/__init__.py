@@ -73,14 +73,13 @@ class TransMeta(models.base.ModelBase):
     '''
 
     def __new__(cls, name, bases, attrs):
+        abstract_model_bases = [base for base in bases if hasattr(base, '_meta') \
+                                and base._meta.abstract]
         if 'Meta' in attrs and hasattr(attrs['Meta'], 'translate'):
             fields = attrs['Meta'].translate
             delattr(attrs['Meta'], 'translate')
         else:
             new_class = super(TransMeta, cls).__new__(cls, name, bases, attrs)
-            # we inherits possible translatable_fields from superclasses
-            abstract_model_bases = [base for base in bases if hasattr(base, '_meta') \
-                                    and base._meta.abstract]
             translatable_fields = []
             for base in abstract_model_bases:
                 if hasattr(base._meta, 'translatable_fields'):
