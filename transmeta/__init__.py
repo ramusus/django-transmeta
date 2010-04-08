@@ -7,10 +7,13 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import get_language
 from django.utils.translation import activate
 from django.utils.translation import deactivate
+from django.utils.translation import ugettext_lazy as _
 
 LANGUAGE_CODE = 0
 LANGUAGE_NAME = 1
 
+class PropertyWithAttributes(property):
+    short_description = None
 
 def get_real_fieldname(field, lang=None):
     if lang is None:
@@ -103,6 +106,7 @@ class TransMeta(models.base.ModelBase):
                         "as specified in Meta's translate attribute" % \
                         dict(field=field, name=name))
             original_attr = attrs[field]
+            original_verbose_name = original_attr.verbose_name
             for lang in settings.LANGUAGES:
                 lang_code = lang[LANGUAGE_CODE]
                 lang_attr = copy.copy(original_attr)
@@ -116,11 +120,13 @@ class TransMeta(models.base.ModelBase):
                         lang_attr.blank = True
                 if lang_attr.verbose_name:
                     activate(lang_code)
-                    lang_attr.verbose_name = u'%s %s' % (lang_attr.verbose_name, lang_code)
+                    lang_attr.verbose_name = '%s %s' % (lang_attr.verbose_name, lang_code)
                     deactivate()
                 attrs[lang_attr_name] = lang_attr
             del attrs[field]
-            attrs[field] = property(default_value(field))
+            attrs[field] = PropertyWithAttributes(default_value(field))
+            if original_verbose_name:
+                attrs[field].short_description = original_verbose_name
 
         new_class = super(TransMeta, cls).__new__(cls, name, bases, attrs)
         if hasattr(new_class, '_meta'):
