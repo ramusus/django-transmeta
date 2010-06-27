@@ -76,26 +76,29 @@ class Command(BaseCommand):
         all_models = get_models()
         found_missing_fields = False
         for model in all_models:
-            if hasattr(model._meta, 'translatable_fields'):
-                model_full_name = '%s.%s' % (model._meta.app_label, model._meta.module_name)
-                translatable_fields = model._meta.translatable_fields
-                db_table = model._meta.db_table
-                for field_name in translatable_fields:
-                    missing_langs = list(self.get_missing_languages(field_name, db_table))
-                    if missing_langs:
-                        found_missing_fields = True
-                        print_missing_langs(missing_langs, field_name, model_full_name)
-                        sql_sentences = self.get_sync_sql(field_name, missing_langs, model)
-                        execute_sql = ask_for_confirmation(sql_sentences, model_full_name)
-                        if execute_sql:
-                            print 'Executing SQL...',
-                            for sentence in sql_sentences:
-                                self.cursor.execute(sentence)
-                                # commit
-                                transaction.commit()
-                            print 'Done'
-                        else:
-                            print 'SQL not executed'
+            bases = model.__bases__
+            abstract_model_bases = [base for base in bases if hasattr(base, '_meta') and base._meta.abstract] + [model]
+            for base in abstract_model_bases:
+                if hasattr(base._meta, 'translatable_fields'):
+                    model_full_name = '%s.%s' % (model._meta.app_label, model._meta.module_name)
+                    translatable_fields = base._meta.translatable_fields
+                    db_table = model._meta.db_table
+                    for field_name in translatable_fields:
+                        missing_langs = list(self.get_missing_languages(field_name, db_table))
+                        if missing_langs:
+                            found_missing_fields = True
+                            print_missing_langs(missing_langs, field_name, model_full_name)
+                            sql_sentences = self.get_sync_sql(field_name, missing_langs, model)
+                            execute_sql = ask_for_confirmation(sql_sentences, model_full_name)
+                            if execute_sql:
+                                print 'Executing SQL...',
+                                for sentence in sql_sentences:
+                                    self.cursor.execute(sentence)
+                                    # commit
+                                    transaction.commit()
+                                print 'Done'
+                            else:
+                                print 'SQL not executed'
 
         transaction.leave_transaction_management()
 
