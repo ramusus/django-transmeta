@@ -141,7 +141,10 @@ class Command(BaseCommand):
                 # data copy from old field (only for default language)
                 sql_output.append("UPDATE %s SET %s = %s" % (qn(db_table), \
                                   qn(f.column), qn(field_name)))
-            if not f.null and lang == self.default_lang:
+            elif not was_translatable_before:
+                sql_output.append("UPDATE %s SET %s = ''" % (qn(db_table), \
+                                  qn(f.column)))
+            if not f.null:
                 # changing to NOT NULL after having data copied
                 sql_output.append("ALTER TABLE %s ALTER COLUMN %s SET %s" % \
                                   (qn(db_table), qn(f.column), \
