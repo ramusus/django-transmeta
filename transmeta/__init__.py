@@ -73,6 +73,7 @@ class TransMeta(models.base.ModelBase):
     '''
 
     def __new__(cls, name, bases, attrs):
+
         if 'Meta' in attrs and hasattr(attrs['Meta'], 'translate'):
             fields = attrs['Meta'].translate
             delattr(attrs['Meta'], 'translate')
@@ -121,7 +122,18 @@ class TransMeta(models.base.ModelBase):
             del attrs[field]
             attrs[field] = property(default_value(field))
 
+        # rename translatable fields in Meta.ordering attribute
+        ordering = []
+        if 'Meta' in attrs and hasattr(attrs['Meta'], 'ordering'):
+            ordering = list(attrs['Meta'].ordering)
+            for i, field in enumerate(ordering):
+                if field in fields:
+                   ordering[i] = get_real_fieldname(field)
+
         new_class = super(TransMeta, cls).__new__(cls, name, bases, attrs)
         if hasattr(new_class, '_meta'):
             new_class._meta.translatable_fields = fields
+            if ordering:
+                new_class._meta.ordering = tuple(ordering)
+
         return new_class
