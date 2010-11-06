@@ -11,6 +11,8 @@ LANGUAGE_NAME = 1
 
 
 def get_real_fieldname(field, lang=None):
+    # do special import for reason of dynamic changing current language
+    from django.utils.translation import get_language
     if lang is None:
        lang = get_language()
     return str('%s_%s' % (field, lang))
@@ -34,6 +36,8 @@ def default_value(field):
     '''
 
     def default_value_func(self):
+        # do special import for reason of dynamic changing current language
+        from django.utils.translation import get_language
         attname = lambda x: get_real_fieldname(field, x)
 
         if getattr(self, attname(get_language()), None):
