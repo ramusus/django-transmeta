@@ -2,7 +2,6 @@
 from django.conf import settings
 from django.utils import translation
 from transmeta import get_real_fieldname
-from djcelery.decorators import respect_to_language
 
 class SetTransMetaAttribute(object):
 
